@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets, permissions
+from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from api.v1.permissions import IsStudentOrIsAdmin, ReadOnlyOrIsAdmin
 from api.v1.serializers.course_serializer import (CourseSerializer,
@@ -14,6 +15,15 @@ from api.v1.serializers.user_serializer import SubscriptionSerializer
 from courses.models import Course
 from users.models import Subscription
 
+
+class AvailableCourseListView(generics.ListAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        purchased_courses = Subscription.objects.filter(user=user).values_list('course_id', flat=True)
+        return Course.objects.filter(is_available=True).exclude(id__in=purchased_courses)
 
 class LessonViewSet(viewsets.ModelViewSet):
     """Уроки."""
