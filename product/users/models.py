@@ -16,6 +16,9 @@ class CustomUser(AbstractUser):
         'last_name',
         'password'
     )
+    
+    is_teacher = models.BooleanField(default=False, verbose_name='Преподаватель')
+
 
     class Meta:
         verbose_name = 'Пользователь'

@@ -1,11 +1,13 @@
 from django.db import models
+from django.core.exceptions import PermissionDenied
 
 
 class Course(models.Model):
     """Модель продукта - курса."""
 
-    author = models.CharField(
-        max_length=250,
+    author = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
         verbose_name='Автор',
     )
     title = models.CharField(
@@ -17,13 +19,22 @@ class Course(models.Model):
         auto_now_add=False,
         verbose_name='Дата и время начала курса'
     )
-
-    # TODO
-
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Стоимость',
+        default=0.00
+    )
+    
     class Meta:
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
         ordering = ('-id',)
+
+    def save(self, *args, **kwargs):
+        if not self.author.is_teacher:
+            raise PermissionDenied("Только преподаватель может создавать уроки.")
+        super().save(*args, **kwargs)    
 
     def __str__(self):
         return self.title
