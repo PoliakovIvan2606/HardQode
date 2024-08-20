@@ -40,6 +40,7 @@ class Course(models.Model):
         return self.title
 
 
+# В уроках тоже надо проверку сделать на тот кто создаёт, это должен быть учитель, при чём тот кто создал данный курс
 class Lesson(models.Model):
     """Модель урока."""
 
@@ -57,8 +58,6 @@ class Lesson(models.Model):
         related_name='lessons',
         verbose_name='Курс',
     )
-
-    # TODO
 
     class Meta:
         verbose_name = 'Урок'

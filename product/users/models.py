@@ -32,12 +32,32 @@ class CustomUser(AbstractUser):
 class Balance(models.Model):
     """Модель баланса пользователя."""
 
-    # TODO
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='balance',
+        verbose_name='Пользователь',
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Баланс',
+        default=1000.00 
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Последнее обновление',
+    )
 
     class Meta:
         verbose_name = 'Баланс'
         verbose_name_plural = 'Балансы'
         ordering = ('-id',)
+
+    def save(self, *args, **kwargs):
+        if self.amount < 0:
+            raise ValueError("Баланс не может быть отрицательным.")
+        super().save(*args, **kwargs)
 
 # При покупки курса пользователь добавляется в таблицу ссылой на данный курс 
 class Subscription(models.Model):
