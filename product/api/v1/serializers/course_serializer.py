@@ -87,7 +87,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_lessons_count(self, obj):
         """Количество уроков в курсе."""
-        # TODO Доп. задание
+        return obj.lesson_set.count()
 
     def get_students_count(self, obj):
         """Общее количество студентов на курсе."""

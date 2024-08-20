@@ -3,6 +3,7 @@ from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from api.v1.permissions import IsStudentOrIsAdmin, ReadOnlyOrIsAdmin
 from api.v1.serializers.course_serializer import (CourseSerializer,
@@ -13,12 +14,40 @@ from api.v1.serializers.course_serializer import (CourseSerializer,
                                                   LessonSerializer)
 from api.v1.serializers.user_serializer import SubscriptionSerializer
 from courses.models import Course
-from users.models import Subscription
+from users.models import Subscription, Balance
+
+
+class PayForCourseView(APIView):
+    """Покупка курса"""
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, course_id, *args, **kwargs):
+        if not course_id:
+            return Response({'detail': 'Не указан идентификатор курса.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        course = get_object_or_404(Course, id=course_id)
+        user = request.user
+
+        try:
+            balance = Balance.objects.get(user=user)
+        except Balance.DoesNotExist:
+            return Response({'detail': 'Баланс не найден.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if balance.amount < course.price:
+            return Response({'detail': 'Недостаточно бонусов.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        balance.amount -= course.price
+        balance.save()
+
+        Subscription.objects.create(user=user, course=course)
+        
+        return Response({'detail': 'Оплата прошла успешно. Доступ к курсу открыт.'}, status=status.HTTP_200_OK)
 
 
 class AvailableCourseListView(generics.ListAPIView):
+    """Список не купленных курсов"""
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user
