@@ -51,6 +51,12 @@ class Lesson(models.Model):
         max_length=250,
         verbose_name='Ссылка',
     )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='lessons',
+        verbose_name='Курс',
+    )
 
     # TODO
 
