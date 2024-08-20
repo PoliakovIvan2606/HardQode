@@ -39,14 +39,29 @@ class Balance(models.Model):
         verbose_name_plural = 'Балансы'
         ordering = ('-id',)
 
-
+# При покупки курса пользователь добавляется в таблицу ссылой на данный курс 
 class Subscription(models.Model):
     """Модель подписки пользователя на курс."""
 
-    # TODO
-
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Пользователь',
+    )
+    course = models.ForeignKey(
+        'courses.Course',
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Курс',
+    )
+    
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('-id',)
+
+    def __str__(self):
+        return f'{self.user} - {self.course}'
+
 
