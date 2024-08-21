@@ -15,7 +15,7 @@ from api.v1.serializers.course_serializer import (CourseSerializer,
                                                   LessonSerializer)
 from api.v1.serializers.user_serializer import SubscriptionSerializer
 from courses.models import Course, Group
-from users.models import Subscription, Balance, 
+from users.models import Subscription, Balance
 
 #########################################################
 class AvailableCourseListView(viewsets.ModelViewSet):

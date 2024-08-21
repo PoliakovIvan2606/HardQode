@@ -3,7 +3,7 @@ from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
                                    SpectacularSwaggerView)
 from rest_framework.routers import DefaultRouter
 
-from api.v1.views.course_view import CourseViewSet, GroupViewSet, LessonViewSet, AvailableCourseListView, PayForCourseView
+from api.v1.views.course_view import CourseViewSet, GroupViewSet, LessonViewSet, AvailableCourseListView
 from api.v1.views.user_view import UserViewSet
 
 v1_router = DefaultRouter()
