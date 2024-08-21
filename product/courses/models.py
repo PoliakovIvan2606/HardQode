@@ -71,8 +71,8 @@ class Lesson(models.Model):
 class Group(models.Model):
     """Модель группы."""
 
-    # TODO
-
+    name = models.CharField(max_length=100, verbose_name='Название группы')
+    
     class Meta:
         verbose_name = 'Группа'
         verbose_name_plural = 'Группы'

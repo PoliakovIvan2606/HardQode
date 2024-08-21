@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,38 +14,11 @@ from api.v1.serializers.course_serializer import (CourseSerializer,
                                                   GroupSerializer,
                                                   LessonSerializer)
 from api.v1.serializers.user_serializer import SubscriptionSerializer
-from courses.models import Course
-from users.models import Subscription, Balance
+from courses.models import Course, Group
+from users.models import Subscription, Balance, 
 
-
-class PayForCourseView(APIView):
-    """Покупка курса"""
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, course_id, *args, **kwargs):
-        if not course_id:
-            return Response({'detail': 'Не указан идентификатор курса.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        course = get_object_or_404(Course, id=course_id)
-        user = request.user
-
-        try:
-            balance = Balance.objects.get(user=user)
-        except Balance.DoesNotExist:
-            return Response({'detail': 'Баланс не найден.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if balance.amount < course.price:
-            return Response({'detail': 'Недостаточно бонусов.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        balance.amount -= course.price
-        balance.save()
-
-        Subscription.objects.create(user=user, course=course)
-        
-        return Response({'detail': 'Оплата прошла успешно. Доступ к курсу открыт.'}, status=status.HTTP_200_OK)
-
-
-class AvailableCourseListView(generics.ListAPIView):
+#########################################################
+class AvailableCourseListView(viewsets.ModelViewSet):
     """Список не купленных курсов"""
     serializer_class = CourseSerializer
     permission_classes = (IsAuthenticated,)
@@ -52,7 +26,8 @@ class AvailableCourseListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         purchased_courses = Subscription.objects.filter(user=user).values_list('course_id', flat=True)
-        return Course.objects.filter(is_available=True).exclude(id__in=purchased_courses)
+        return Course.objects.exclude(id__in=purchased_courses)
+###########################################################
 
 class LessonViewSet(viewsets.ModelViewSet):
     """Уроки."""
@@ -111,9 +86,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     def pay(self, request, pk):
         """Покупка доступа к курсу (подписка на курс)."""
 
-        # TODO
+        course = get_object_or_404(Course, id=pk)
+        user = request.user
 
-        return Response(
-            data=data,
-            status=status.HTTP_201_CREATED
-        )
+        try:
+            balance = Balance.objects.get(user=user)
+        except Balance.DoesNotExist:
+            return Response({'detail': 'Баланс не найден.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if balance.amount < course.price:
+            return Response({'detail': 'Недостаточно бонусов.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        balance.amount -= course.price
+        balance.save()
+
+        Subscription.objects.create(user=user, course=course)
+        
+        group = self.get_group_with_least_students()
+        user.group = group
+        user.save()
+
+        return Response({'detail': 'Оплата прошла успешно. Доступ к курсу открыт, пользователь добавлен в группу.'}, status=status.HTTP_200_OK)
+
+    def get_group_with_least_students(self):        group = Group.objects.annotate(student_count=Count('user')).order_by('student_count').first()
+        return group

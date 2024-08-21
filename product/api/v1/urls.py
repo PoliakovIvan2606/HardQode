@@ -15,18 +15,15 @@ v1_router.register(
 v1_router.register(
     r'courses/(?P<course_id>\d+)/groups', GroupViewSet, basename='groups'
 )
+v1_router.register('available', AvailableCourseListView, basename='available-courses')
+
 
 urlpatterns = [
     path("", include(v1_router.urls)),
     path("auth/", include('djoser.urls')),
     path("auth/", include('djoser.urls.authtoken')),
     # Создание нового пользователя api/v1/auth/users/
-    # Авторизация пользователя     api/v1/auth/token/login/
-    
-    path('courses/available/', AvailableCourseListView.as_view(), name='available-courses'),
-    path('pay/<int:course_id>/', PayForCourseView.as_view(), name='pay-for-course'),
-
-
+    # Авторизация пользователя     api/v1/auth/token/login/    
 ]
 
 urlpatterns += [

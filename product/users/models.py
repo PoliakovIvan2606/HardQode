@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
         max_length=250,
         unique=True
     )
+    is_teacher = models.BooleanField(default=False, verbose_name='Преподаватель')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
         'username',
@@ -17,7 +18,6 @@ class CustomUser(AbstractUser):
         'password'
     )
     
-    is_teacher = models.BooleanField(default=False, verbose_name='Преподаватель')
 
 
     class Meta:
