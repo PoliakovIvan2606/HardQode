@@ -108,5 +108,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
         return Response({'detail': 'Оплата прошла успешно. Доступ к курсу открыт, пользователь добавлен в группу.'}, status=status.HTTP_200_OK)
 
-    def get_group_with_least_students(self):        group = Group.objects.annotate(student_count=Count('user')).order_by('student_count').first()
+    def get_group_with_least_students(self):
+        group = Group.objects.annotate(student_count=Count('user')).order_by('student_count').first()
         return group
